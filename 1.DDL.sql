@@ -48,9 +48,24 @@ alter table author add column age int;
 alter table author drop column age;
 -- 테이블 컬럼명 변경
 alter table post change column contents content varchar(255);
--- 테이블 컬럼의 타입과 제약조건 변경
-alter table author modify column email varchar(100)
+-- 테이블 컬럼의 타입과 제약조건 변경 ==>덮어쓰기
+alter table author modify column email varchar(100) not null;
+alter table author modify column email varchar(100) not null unique;
 
+-- 실습: author테이블에 adress 컬럼을 추가(varchar(255))
+alter table author add column adress varchar(255);
+-- 실습: post테이블에 title은 not null로 변경, content는 길이 3000자로 변경
+alter table post modify column title varchar(255)not null,modify column content varchar(3000);
 
 -- drop : 테이블을 삭제하는 명령어
+drop table abc;
+
+-- 일련의 쿼리를 실행시킬때 특정 쿼리에서 에러가 나지 않도록 if exists를 많이 사용.
+drop table if exists abc; --있으면 삭제 아님말고 ㅋ
+
+
+
+
+
+
 
