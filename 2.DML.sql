@@ -20,6 +20,8 @@ select*from author where id = 1;
 select*from author where name = 'hongildong';
 select*from author where id>3;
 select*from author where id>2 and name = 'hongildong4';
+select * from author where id in (1,3,5);
+select * from where author_id in(select id from author where name = 'hong')
 
 --중복제거 조회
 select name from author;
