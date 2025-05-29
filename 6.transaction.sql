@@ -36,4 +36,5 @@ begin
     update author set post_count=post_count+1 where id = 3;
     insert into post(title,content,author_id) values(titleinput,contentInput,idinput);
     commit;
-
+end//
+DELIMITER
