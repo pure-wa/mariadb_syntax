@@ -45,6 +45,118 @@ on B.author_id = A.author_id where B.category like '경제%' order by published_
 SELECT O.ANIMAL_ID,O.NAME 
 FROM ANIMAL_OUTS O 
 left join ANIMAL_INS I ON O.ANIMAL_ID = I.ANIMAL_ID 
-where I.datetime is null order by o.ANIMAL_ID
+where I.datetime is null order by o.ANIMAL_ID;
 
 SELECT o.animal_id, o.name from animal_outs o where o.animal_id not in (select animal_id from animal_ins);
+
+
+--번외 앞자리 코드 두자리수를 카운팅하는 법
+SELECT
+  LEFT(PRODUCT_CODE, 2) AS CATEGORY,
+  COUNT(*)           AS PRODUCTS
+FROM PRODUCT
+GROUP BY CATEGORY
+ORDER BY CATEGORY;
+
+-- union : 두 테이블의 select 결과를 횡으로 결합(기본적으로 distinct 적용)
+-- union 시킬때 컬럼의 개수와 컬럼의 타입이 같아야함.
+select name, email from author union select title , content from post;
+-- union all : 중복까지 모두 포함
+select name, email from author union all select title , content from post;
+
+-- 서브쿼리: select문 안에 또다른 select문을 서브쿼리라 한다.
+select 컬럼 from 테이블 where 조건
+
+--where절 안에 서브쿼리
+-- 한번이라도 글을 쓴 author 목록 조회
+select distinct a.* from author a inner join post p on a.id=p.author_id;
+-- null값은 in조건절에서 자동으로 제외
+select * from author where id in(select author_id from post);
+
+--컬럼 위치에 서브쿼리
+-- author의 email과 author 별로 본인이 쓴 글의 개수로 출력.
+select email, (select COUNT(*) from post p where a.id=p.author_id) from author a;
+select count(*) from author; --null은 카운터에서 빠짐
+
+
+
+--from절 위치에 서브쿼리
+select a.* from (select * from author where id>5) as a;
+
+-- group by  컬럼명 : 특정 컬럼으로 데이터를 그룹화 하며, 하나의 행(row)처럼 취급
+select author_id from post group by author_id;
+-- 보통 아래와 같이 집계합수와 같이 많이 사용
+select author_id,count(*) from post group by author_id;
+
+-- 집계함수
+-- null은 count에서 제외
+select count(*) from author;
+select sum(price) from post;
+select avg(price) from post;
+-- 소수점 3번째 자리에서 반올림
+select round(avg(price),3) from post;
+
+--group by와 집계함수
+select author_id,count(*),sum(price) from post group by author_id;
+
+-- where와 group by
+-- 날짜별 post 글의 개수 출력(날짜 값이 null은 제외)
+select DATE_FORMAT(created_time,'%Y-%m-%d') as day,count(*) from post where created_time is not null group by day;
+
+-- 자동차 종류 별 특정 옵션이 포함된 자동차 수 구하기
+SELECT CAR_TYPE,COUNT(*) AS CARS
+FROM CAR_RENTAL_COMPANY_CAR
+WHERE OPTIONS REGEXP '통풍시트|열선시트|가죽시트'
+GROUP BY CAR_TYPE
+ORDER BY CAR_TYPE;
+
+-- 입양시각 구하기(1)
+SELECT
+  HOUR(`datetime`) AS `hour`,
+  COUNT(*)        AS `count`
+FROM ANIMAL_OUTS
+WHERE
+  HOUR(`datetime`) BETWEEN 9 AND 20
+GROUP BY
+  HOUR(`datetime`)
+ORDER BY
+  `hour`;
+
+-- group by와 having
+-- having은 group by를 통해 나온 집계값에 대한 조건
+-- 글을 두번이상 쓴사람에 대한 ID 찾기
+select author_id,count(*) from post group by author_id having count(*) > 1;
+
+-- 동명 동물 수 찾기
+SELECT NAME,COUNT(NAME)
+FROM ANIMAL_INS
+WHERE NAME IS NOT NULL
+GROUP BY NAME
+HAVING COUNT(*) > 1
+ORDER BY NAME;
+
+-- 카테고리 별 도서 판매량 집계하기
+SELECT B.CATEGORY, SUM(BS.SALES)  AS TOTAL_SALES
+FROM BOOK B INNER JOIN BOOK_SALES BS ON B.BOOK_ID = BS.BOOK_ID
+WHERE DATE_FORMAT(BS.SALES_DATE, '%Y-%m') = '2022-01'
+GROUP BY B.CATEGORY ORDER BY B.CATEGORY;
+
+-- 조건에 맞는 사용자의 총 거래 금액 찾기
+SELECT USER_ID,NICKNAME,SUM(B.PRICE)TOTAL_SALES
+FROM USED_GOODS_BOARD B INNER JOIN USED_GOODS_USER U ON B.WRITER_ID = U.USER_ID
+WHERE B.STATUS = 'DONE'
+GROUP BY USER_ID,NICKNAME
+HAVING TOTAL_SALES >=700000
+ORDER BY TOTAL_SALES;
+
+-- 다중열 GROUP BY: 
+-- group by 첫번째 컬럼, 두번째 컬럼: 첫번째 컬럼으로 먼저 grouping이후에 두번째 컬럼으로 grouping
+-- post테이블에서 작성자별로 만든 제목의 개수를 출력하시오
+select author_id,title,count(*) from post group by author_id, title;
+
+--재구매가 일어난 상품과 회원 리스트 구하기
+SELECT USER_ID,PRODUCT_ID
+FROM ONLINE_SALE
+GROUP BY USER_ID,PRODUCT_ID
+HAVING COUNT(*)>1
+ORDER BY USER_ID ASC,PRODUCT_ID DESC;
